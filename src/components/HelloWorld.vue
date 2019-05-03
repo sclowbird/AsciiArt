@@ -10,7 +10,9 @@
 export default {
   name: "HelloWorld",
   data() {
-    return {};
+    return {
+      pixelData: ""
+    };
   },
   props: {
     msg: String
@@ -40,7 +42,27 @@ export default {
       ctx.drawImage(image, 0, 0);
       let imageData = ctx.getImageData(0, 0, image.width, image.height).data;
       console.log(`Image size: ${image.width} x ${image.height}`);
-      console.log(`Image loaded successfully. \n ${imageData}`);
+      //    console.log(`Image loaded successfully. \n ${imageData}`);
+      this.pixelData = imageData;
+      let pixels = this.createPixelTupels();
+    },
+
+    createPixelTupels() {
+      let pixelArray = Object.values(this.pixelData);
+      let pixelTuples = [];
+      let counter = 0;
+      for (let i = 0; i < pixelArray.length; i++) {
+        let tempArray = [];
+        if (i != 0) {
+          counter += 2;
+        }
+        for (let j = 0; j < 3; j++) {
+          tempArray.push(pixelArray[i + j + counter]);
+        }
+        pixelTuples.push(tempArray);
+      }
+      console.log(pixelTuples);
+      return pixelTuples;
     }
   }
 };
