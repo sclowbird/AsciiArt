@@ -3,8 +3,10 @@
     <h1>{{ msg }}</h1>
     <input type="file" id="input" @change="loadImageData">
     <img id="my-image">
-    <div id="ascii">
-      <p>{{ asciiString }}</p>
+    <div id="test">
+      <div id="ascii" v-for="(item, index) in asciiObj" :key="index">
+        <p class="overflow-visible">{{ item.row }}</p>
+      </div>
     </div>
   </div>
 </template>
@@ -14,7 +16,9 @@ export default {
   name: "HelloWorld",
   data() {
     return {
-      asciiString: ""
+      imageWidth: 0,
+      asciiString: "",
+      asciiObj: [{ row: "Placeholder" }]
     };
   },
   props: {
@@ -47,7 +51,8 @@ export default {
       let pixelTuples = this.createPixelTuples(imageColors);
       let pixelsWithoutAlpha = this.removeAlphaChannel(pixelTuples);
       let pixelBrightness = this.convertPixelToBrightness(pixelsWithoutAlpha);
-      this.mapBrigthnessToAscii(pixelBrightness);
+      let asciiString = this.mapBrigthnessToAscii(pixelBrightness);
+      this.addLineBreaks(asciiString);
 
       //can.style.border = "blue";
     },
@@ -69,6 +74,7 @@ export default {
 
     getImageColors(img, ctx) {
       let imgColors = ctx.getImageData(0, 0, img.width, img.height).data;
+      this.imageWidth = img.width * 3;
       console.log(
         `Width: ${img.width}, Height: ${img.height}, pixel: ${img.width *
           img.height}`
@@ -121,24 +127,34 @@ export default {
     },
 
     mapBrigthnessToAscii(pixelBrightness) {
-      console.log("Pixel Brigthness length: " + pixelBrightness.length);
-      let printedChars = 0;
       const maxBrigthness = 255;
       const conversionFactor = 4;
-      const test = 75;
       let asciiToString = "";
       let asciiChars = this.createAsciiCharacters();
+      let counter = 0;
       for (let i = 0; i < pixelBrightness.length; i++) {
         let correspondingAsciiChar = Math.round(
           pixelBrightness[i] / conversionFactor
         );
         pixelBrightness[i] = asciiChars[correspondingAsciiChar];
         asciiToString += pixelBrightness[i];
-        if (i % test == 0) {
-          asciiToString += "\n";
+        asciiToString += pixelBrightness[i];
+        asciiToString += pixelBrightness[i];
+      }
+      return asciiToString;
+    },
+
+    addLineBreaks(asciiString) {
+      console.log(`Ascii String Length: ${asciiString.length}`);
+      let rowStrings = "";
+      for (let i = 1; i < asciiString.length + 1; i++) {
+        rowStrings += asciiString[i - 1];
+        if (i % this.imageWidth == 0) {
+          console.log(`${rowStrings}`);
+          this.asciiObj.push({ row: rowStrings });
+          rowStrings = "";
         }
       }
-      this.asciiString = asciiToString;
     }
   }
 };
@@ -161,14 +177,21 @@ a {
   color: #42b983;
 }
 */
-#ascii {
-  display: inline-block;
-  background-color: aqua;
+input {
+  margin-bottom: 30px;
 }
 
-p {
-  font-size: 4px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+#test {
+}
+
+#ascii {
+  text-align: justify;
+  text-justify: inter-character;
+}
+
+.overflow-visible {
+  font-family: "Courier New";
+  font-size: 3px;
+  font-weight: bold;
 }
 </style>
