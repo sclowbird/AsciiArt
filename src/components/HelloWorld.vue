@@ -3,6 +3,9 @@
     <h1>{{ msg }}</h1>
     <input type="file" id="input" @change="loadImageData">
     <img id="my-image">
+    <div id="ascii">
+      <p>{{ asciiString }}</p>
+    </div>
   </div>
 </template>
 
@@ -10,7 +13,9 @@
 export default {
   name: "HelloWorld",
   data() {
-    return {};
+    return {
+      asciiString: ""
+    };
   },
   props: {
     msg: String
@@ -19,59 +24,121 @@ export default {
     loadImageData(e) {
       let imageFile = e.target.files;
       if (!imageFile.length) return;
-      this.createImage(imageFile[0]);
+      this.readImageData(imageFile[0]);
     },
 
-    createImage(file) {
+    readImageData(imageFile) {
       let fr = new FileReader();
       // onload event gets triggered after content of readAsDataUrl is ready
-      fr.onload = () => this.showImage(fr);
-      fr.readAsDataURL(file);
+      fr.onload = () => this.getImageDataResult(fr);
+      fr.readAsDataURL(imageFile);
     },
 
-    showImage(fileReader) {
+    getImageDataResult(fileReader) {
       let img = document.getElementById("my-image");
-      img.onload = () => this.getImageData(img);
-      // file reader result is necessary to display image from img source
+      img.onload = () => this.processImage(img);
       img.src = fileReader.result;
     },
 
-    getImageData(image) {
-      let canvas = document.createElement("canvas");
-      let ctx = canvas.getContext("2d");
-      ctx.drawImage(image, 0, 0);
-      let imageData = ctx.getImageData(0, 0, image.width, image.height).data;
-      //let imageDataWithoutAlpha = this.isNoAlpha(imageData);
+    processImage(img) {
+      let ctx = this.getCanvasContext();
+      this.drawImageToCanvas(img, ctx);
+      let imageColors = this.getImageColors(img, ctx);
+      let pixelTuples = this.createPixelTuples(imageColors);
+      let pixelsWithoutAlpha = this.removeAlphaChannel(pixelTuples);
+      let pixelBrightness = this.convertPixelToBrightness(pixelsWithoutAlpha);
+      this.mapBrigthnessToAscii(pixelBrightness);
 
-      console.log(`Image size: ${image.width} x ${image.height}`);
-      //console.log(`Image loaded successfully. \n ${imageData}`);
-      this.createPixelTupels(imageData);
+      //can.style.border = "blue";
     },
 
-    createPixelTupels(imageData) {
-      let pixelArray = Object.values(imageData);
+    getCanvasContext() {
+      let canvas = this.createCanvas();
+      let ctx = canvas.getContext("2d");
+      return ctx;
+    },
+
+    createCanvas() {
+      let canvas = document.createElement("canvas");
+      return canvas;
+    },
+
+    drawImageToCanvas(img, ctx) {
+      ctx.drawImage(img, 0, 0);
+    },
+
+    getImageColors(img, ctx) {
+      let imgColors = ctx.getImageData(0, 0, img.width, img.height).data;
+      console.log(
+        `Width: ${img.width}, Height: ${img.height}, pixel: ${img.width *
+          img.height}`
+      );
+
+      let imgColorArray = Object.values(imgColors);
+      return imgColorArray;
+    },
+
+    createPixelTuples(imgColorArray) {
       let pixelTuples = [];
       let counter = 0;
-      for (let i = 0; i < pixelArray.length; i++) {
+      for (let i = 0; i < imgColorArray.length / 4; i++) {
         let tempArray = [];
         if (i != 0) {
           counter += 3;
         }
         for (let j = 0; j < 4; j++) {
-          tempArray.push(pixelArray[i + j + counter]);
+          tempArray.push(imgColorArray[i + j + counter]);
         }
         pixelTuples.push(tempArray);
       }
-      this.removeAlphaChannel(pixelTuples);
+      return pixelTuples;
     },
 
     removeAlphaChannel(pixelTuples) {
-      console.log(pixelTuples.length);
-      console.log(pixelTuples[0].length);
       for (let i = 0; i < pixelTuples.length; i++) {
         pixelTuples[i].splice(3, 1);
       }
-      console.log(pixelTuples);
+      return pixelTuples;
+    },
+
+    convertPixelToBrightness(pixelTuples) {
+      console.log(pixelTuples[0]);
+      for (let i = 0; i < pixelTuples.length; i++) {
+        let rgbAverage = 0;
+        for (let j = 0; j < pixelTuples[i].length; j++) {
+          rgbAverage += pixelTuples[i][j];
+        }
+        rgbAverage = Math.round(rgbAverage / 3);
+        pixelTuples[i] = rgbAverage;
+      }
+      return pixelTuples;
+    },
+
+    createAsciiCharacters() {
+      let asciiChars =
+        '`^",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$';
+      return asciiChars;
+    },
+
+    mapBrigthnessToAscii(pixelBrightness) {
+      console.log("Pixel Brigthness length: " + pixelBrightness.length);
+      let printedChars = 0;
+      const maxBrigthness = 255;
+      const conversionFactor = 4;
+      const test = 75;
+      let asciiToString = "";
+      let asciiChars = this.createAsciiCharacters();
+      for (let i = 0; i < pixelBrightness.length; i++) {
+        let correspondingAsciiChar = Math.round(
+          pixelBrightness[i] / conversionFactor
+        );
+        pixelBrightness[i] = asciiChars[correspondingAsciiChar];
+        asciiToString += pixelBrightness[i];
+        if (i % test == 0) {
+          asciiToString += "\n";
+        }
+      }
+      this.asciiString = asciiToString;
     }
   }
 };
@@ -79,7 +146,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
+/*h3 {
   margin: 40px 0 0;
 }
 ul {
@@ -92,5 +159,16 @@ li {
 }
 a {
   color: #42b983;
+}
+*/
+#ascii {
+  display: inline-block;
+  background-color: aqua;
+}
+
+p {
+  font-size: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
