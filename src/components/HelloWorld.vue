@@ -1,7 +1,7 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
-    <input type="file" id="input" @change="loadTextFromFile">
+    <input type="file" id="input" @change="loadImageData">
     <img id="my-image">
   </div>
 </template>
@@ -10,22 +10,21 @@
 export default {
   name: "HelloWorld",
   data() {
-    return {
-      pixelData: ""
-    };
+    return {};
   },
   props: {
     msg: String
   },
   methods: {
-    loadTextFromFile(e) {
-      let files = e.target.files || e.dataTransfer.files;
-      if (!files.length) return;
-      this.createImage(files[0]);
+    loadImageData(e) {
+      let imageFile = e.target.files;
+      if (!imageFile.length) return;
+      this.createImage(imageFile[0]);
     },
+
     createImage(file) {
       let fr = new FileReader();
-      let eventResult;
+      // onload event gets triggered after content of readAsDataUrl is ready
       fr.onload = () => this.showImage(fr);
       fr.readAsDataURL(file);
     },
@@ -33,6 +32,7 @@ export default {
     showImage(fileReader) {
       let img = document.getElementById("my-image");
       img.onload = () => this.getImageData(img);
+      // file reader result is necessary to display image from img source
       img.src = fileReader.result;
     },
 
@@ -41,28 +41,37 @@ export default {
       let ctx = canvas.getContext("2d");
       ctx.drawImage(image, 0, 0);
       let imageData = ctx.getImageData(0, 0, image.width, image.height).data;
+      //let imageDataWithoutAlpha = this.isNoAlpha(imageData);
+
       console.log(`Image size: ${image.width} x ${image.height}`);
-      //    console.log(`Image loaded successfully. \n ${imageData}`);
-      this.pixelData = imageData;
-      let pixels = this.createPixelTupels();
+      //console.log(`Image loaded successfully. \n ${imageData}`);
+      this.createPixelTupels(imageData);
     },
 
-    createPixelTupels() {
-      let pixelArray = Object.values(this.pixelData);
+    createPixelTupels(imageData) {
+      let pixelArray = Object.values(imageData);
       let pixelTuples = [];
       let counter = 0;
       for (let i = 0; i < pixelArray.length; i++) {
         let tempArray = [];
         if (i != 0) {
-          counter += 2;
+          counter += 3;
         }
-        for (let j = 0; j < 3; j++) {
+        for (let j = 0; j < 4; j++) {
           tempArray.push(pixelArray[i + j + counter]);
         }
         pixelTuples.push(tempArray);
       }
+      this.removeAlphaChannel(pixelTuples);
+    },
+
+    removeAlphaChannel(pixelTuples) {
+      console.log(pixelTuples.length);
+      console.log(pixelTuples[0].length);
+      for (let i = 0; i < pixelTuples.length; i++) {
+        pixelTuples[i].splice(3, 1);
+      }
       console.log(pixelTuples);
-      return pixelTuples;
     }
   }
 };
