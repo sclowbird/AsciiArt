@@ -17,6 +17,8 @@ export default {
   data() {
     return {
       imageWidth: 0,
+      imageHeight: 0,
+      resizeFactor: 0,
       asciiString: "",
       asciiObj: [{ row: "Placeholder" }]
     };
@@ -69,15 +71,64 @@ export default {
     },
 
     drawImageToCanvas(img, ctx) {
-      ctx.drawImage(img, 0, 0);
+      const maximumPixels = 13000;
+      const originalPixelSize = img.height * img.width;
+      this.imageWidth = img.width;
+      this.imageHeight = img.height;
+      console.log(`ORIGINAL WIDTH: ${this.imageWidth}`);
+      console.log(`ORIGINAL HEIGHT: ${this.imageHeight}`);
+
+      let width = img.width;
+      let height = img.height;
+      let resizedPixels = img.height * img.width;
+      let resizeSpeed = 0.95;
+
+      if (originalPixelSize > maximumPixels) {
+        while (resizedPixels > maximumPixels) {
+          resizedPixels = resizedPixels * resizeSpeed;
+        }
+        //calculate resizefactor
+        this.resizeFactor = resizedPixels / originalPixelSize;
+        //round to second post decimal digit
+        this.resizeFactor = Math.round(this.resizeFactor * 1000) / 100;
+        // console.log(`This resize factor ${this.resizeFactor}`);
+        width = Math.round(img.width * this.resizeFactor);
+        height = Math.round(img.height * this.resizeFactor);
+
+        this.imageWidth = width;
+        this.imageHeight = height;
+        console.log(`RESIZED WIDTH: ${this.imageWidth}`);
+        console.log(`RESIZED HEIGHT: ${this.imageHeight}`);
+        // console.log(
+        //   `resizedWidth: ${width}, resizedHeight: ${height}, new Pixels: ${width *
+        //     height}`
+        // );
+      }
+
+      //correct resizefactor so that width and height is no float number
+
+      ctx.drawImage(
+        img,
+        0,
+        0,
+        img.width,
+        img.height,
+        0,
+        0,
+        this.imageWidth,
+        this.imageHeight
+      );
     },
 
     getImageColors(img, ctx) {
-      let imgColors = ctx.getImageData(0, 0, img.width, img.height).data;
-      this.imageWidth = img.width * 3;
+      let imgColors = ctx.getImageData(0, 0, this.imageWidth, this.imageHeight)
+        .data;
+
+      this.imageWidth = Math.floor(this.imageWidth * 3);
+
       console.log(
-        `Width: ${img.width}, Height: ${img.height}, pixel: ${img.width *
-          img.height}`
+        `Width: ${this.imageWidth}, Height: ${this.imageHeight}, pixel: ${this
+          .imageWidth * this.imageHeight}`
       );
 
       let imgColorArray = Object.values(imgColors);
@@ -137,20 +188,20 @@ export default {
           pixelBrightness[i] / conversionFactor
         );
         pixelBrightness[i] = asciiChars[correspondingAsciiChar];
-        asciiToString += pixelBrightness[i];
-        asciiToString += pixelBrightness[i];
-        asciiToString += pixelBrightness[i];
+        for (let j = 0; j < 3; j++) {
+          asciiToString += pixelBrightness[i];
+        }
       }
       return asciiToString;
     },
 
     addLineBreaks(asciiString) {
       console.log(`Ascii String Length: ${asciiString.length}`);
+      console.log(`This Image Width: ${this.imageWidth}`);
       let rowStrings = "";
       for (let i = 1; i < asciiString.length + 1; i++) {
         rowStrings += asciiString[i - 1];
         if (i % this.imageWidth == 0) {
-          console.log(`${rowStrings}`);
           this.asciiObj.push({ row: rowStrings });
           rowStrings = "";
         }
@@ -190,8 +241,9 @@ input {
 }
 
 .overflow-visible {
-  font-family: "Courier New";
-  font-size: 3px;
-  font-weight: bold;
+  font-family: "Roboto Mono", monospace;
+  color: black;
+  font-size: 4px;
+  font-weight: bolder;
 }
 </style>
