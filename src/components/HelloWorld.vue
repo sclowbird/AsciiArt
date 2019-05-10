@@ -71,41 +71,28 @@ export default {
     },
 
     drawImageToCanvas(img, ctx) {
-      const maximumPixels = 13000;
+      const maximumPixels = 15000;
+      const resizeSpeed = 0.95;
       const originalPixelSize = img.height * img.width;
+
       this.imageWidth = img.width;
       this.imageHeight = img.height;
-      console.log(`ORIGINAL WIDTH: ${this.imageWidth}`);
-      console.log(`ORIGINAL HEIGHT: ${this.imageHeight}`);
 
-      let width = img.width;
-      let height = img.height;
       let resizedPixels = img.height * img.width;
-      let resizeSpeed = 0.95;
-
       if (originalPixelSize > maximumPixels) {
         while (resizedPixels > maximumPixels) {
           resizedPixels = resizedPixels * resizeSpeed;
+          console.log(`RESIZE: ${resizedPixels}`);
         }
         //calculate resizefactor
         this.resizeFactor = resizedPixels / originalPixelSize;
         //round to second post decimal digit
         this.resizeFactor = Math.round(this.resizeFactor * 1000) / 100;
-        // console.log(`This resize factor ${this.resizeFactor}`);
-        width = Math.round(img.width * this.resizeFactor);
-        height = Math.round(img.height * this.resizeFactor);
 
-        this.imageWidth = width;
-        this.imageHeight = height;
-        console.log(`RESIZED WIDTH: ${this.imageWidth}`);
-        console.log(`RESIZED HEIGHT: ${this.imageHeight}`);
-        // console.log(
-        //   `resizedWidth: ${width}, resizedHeight: ${height}, new Pixels: ${width *
-        //     height}`
-        // );
+        //correct resizefactor so that width and height is no float number
+        this.imageWidth = Math.round(this.imageWidth * this.resizeFactor);
+        this.imageHeight = Math.round(this.imageHeight * this.resizeFactor);
       }
-
-      //correct resizefactor so that width and height is no float number
 
       ctx.drawImage(
         img,
@@ -159,7 +146,6 @@ export default {
     },
 
     convertPixelToBrightness(pixelTuples) {
-      console.log(pixelTuples[0]);
       for (let i = 0; i < pixelTuples.length; i++) {
         let rgbAverage = 0;
         for (let j = 0; j < pixelTuples[i].length; j++) {
