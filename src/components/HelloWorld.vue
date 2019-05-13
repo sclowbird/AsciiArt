@@ -71,28 +71,21 @@ export default {
     },
 
     drawImageToCanvas(img, ctx) {
-      const maximumPixels = 15000;
-      const resizeSpeed = 0.95;
+      const maximumWidth = 100;
       const originalPixelSize = img.height * img.width;
 
       this.imageWidth = img.width;
       this.imageHeight = img.height;
 
-      let resizedPixels = img.height * img.width;
-      if (originalPixelSize > maximumPixels) {
-        while (resizedPixels > maximumPixels) {
-          resizedPixels = resizedPixels * resizeSpeed;
-          console.log(`RESIZE: ${resizedPixels}`);
-        }
-        //calculate resizefactor
-        this.resizeFactor = resizedPixels / originalPixelSize;
-        //round to second post decimal digit
-        this.resizeFactor = Math.round(this.resizeFactor * 1000) / 100;
+      console.log(`Width: ${this.imageWidth} Height: ${this.imageHeight}`);
+      let scalingFactor = maximumWidth / this.imageWidth;
 
-        //correct resizefactor so that width and height is no float number
-        this.imageWidth = Math.round(this.imageWidth * this.resizeFactor);
-        this.imageHeight = Math.round(this.imageHeight * this.resizeFactor);
-      }
+      //correct resizefactor so that width and height is no float number
+      this.imageWidth = Math.round(this.imageWidth * scalingFactor);
+      this.imageHeight = Math.round(this.imageHeight * scalingFactor);
+      console.log(
+        `New Width: ${this.imageWidth} New Height: ${this.imageHeight}`
+      );
 
       ctx.drawImage(
         img,
@@ -112,11 +105,6 @@ export default {
         .data;
 
       this.imageWidth = Math.floor(this.imageWidth * 3);
-
-      console.log(
-        `Width: ${this.imageWidth}, Height: ${this.imageHeight}, pixel: ${this
-          .imageWidth * this.imageHeight}`
-      );
 
       let imgColorArray = Object.values(imgColors);
       return imgColorArray;
@@ -148,10 +136,14 @@ export default {
     convertPixelToBrightness(pixelTuples) {
       for (let i = 0; i < pixelTuples.length; i++) {
         let rgbAverage = 0;
-        for (let j = 0; j < pixelTuples[i].length; j++) {
-          rgbAverage += pixelTuples[i][j];
+        for (let j = 0; j < 1; j++) {
+          rgbAverage += pixelTuples[i][0] * pixelTuples[i][0] * 0.241;
+          rgbAverage += pixelTuples[i][1] * pixelTuples[i][1] * 0.691;
+          rgbAverage += pixelTuples[i][2] * pixelTuples[i][2] * 0.068;
         }
-        rgbAverage = Math.round(rgbAverage / 3);
+
+        rgbAverage = Math.sqrt(rgbAverage);
+
         pixelTuples[i] = rgbAverage;
       }
       return pixelTuples;
@@ -159,7 +151,8 @@ export default {
 
     createAsciiCharacters() {
       let asciiChars =
-        '`^",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$';
+        //'.`^",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$';
+        '$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~i!lI;:,"^`.';
       return asciiChars;
     },
 
@@ -173,6 +166,7 @@ export default {
         let correspondingAsciiChar = Math.round(
           pixelBrightness[i] / conversionFactor
         );
+
         pixelBrightness[i] = asciiChars[correspondingAsciiChar];
         for (let j = 0; j < 3; j++) {
           asciiToString += pixelBrightness[i];
@@ -218,16 +212,8 @@ input {
   margin-bottom: 30px;
 }
 
-#test {
-}
-
-#ascii {
-  text-align: justify;
-  text-justify: inter-character;
-}
-
 .overflow-visible {
-  font-family: "Roboto Mono", monospace;
+  font-family: "Press Start 2P", monospace;
   color: black;
   font-size: 4px;
   font-weight: bolder;
