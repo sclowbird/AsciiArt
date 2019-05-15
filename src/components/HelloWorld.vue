@@ -2,11 +2,9 @@
   <div class="hello">
     <h1>{{ msg }}</h1>
     <input type="file" id="input" @change="loadImageData">
-    <img id="my-image">
-    <div id="test">
-      <div id="ascii" v-for="(item, index) in asciiObj" :key="index">
-        <p class="overflow-visible">{{ item.row }}</p>
-      </div>
+    <img hidden id="my-image">
+    <div id="ascii" v-for="(item, index) in asciiObj" :key="index">
+      <p class="overflow-visible">{{ item.row }}</p>
     </div>
   </div>
 </template>
@@ -20,7 +18,7 @@ export default {
       imageHeight: 0,
       resizeFactor: 0,
       asciiString: "",
-      asciiObj: [{ row: "Placeholder" }]
+      asciiObj: [{ row: " " }]
     };
   },
   props: {
@@ -77,15 +75,11 @@ export default {
       this.imageWidth = img.width;
       this.imageHeight = img.height;
 
-      console.log(`Width: ${this.imageWidth} Height: ${this.imageHeight}`);
       let scalingFactor = maximumWidth / this.imageWidth;
 
       //correct resizefactor so that width and height is no float number
       this.imageWidth = Math.round(this.imageWidth * scalingFactor);
       this.imageHeight = Math.round(this.imageHeight * scalingFactor);
-      console.log(
-        `New Width: ${this.imageWidth} New Height: ${this.imageHeight}`
-      );
 
       ctx.drawImage(
         img,
@@ -176,8 +170,6 @@ export default {
     },
 
     addLineBreaks(asciiString) {
-      console.log(`Ascii String Length: ${asciiString.length}`);
-      console.log(`This Image Width: ${this.imageWidth}`);
       let rowStrings = "";
       for (let i = 1; i < asciiString.length + 1; i++) {
         rowStrings += asciiString[i - 1];
@@ -212,10 +204,16 @@ input {
   margin-bottom: 30px;
 }
 
+#ascii {
+  min-width: 1200px;
+  width: 1200px;
+  resize: none;
+}
+
 .overflow-visible {
   font-family: "Press Start 2P", monospace;
   color: black;
-  font-size: 4px;
+  font-size: 3px;
   font-weight: bolder;
 }
 </style>
