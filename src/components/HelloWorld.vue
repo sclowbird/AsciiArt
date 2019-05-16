@@ -1,11 +1,20 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
-    <input type="file" id="input" @change="loadImageData">
-    <img hidden id="my-image">
-    <div id="ascii" v-for="(item, index) in asciiObj" :key="index">
-      <p class="overflow-visible">{{ item.row }}</p>
+    <img id="ascii-logo" alt="Vue logo" src="../assets/logo.png">
+    <div class="input-container">
+      <label for="input">Choose an image</label>
+      <input type="file" id="input" @change="loadImageData">
     </div>
+    <img hidden id="my-image">
+    <div id="ascii-container">
+      <div id="ascii" v-for="(item, index) in asciiObj" :key="index">
+        <p class="overflow-visible">{{ item.row }}</p>
+      </div>
+    </div>
+    <canvas hidden id="image-canvas"></canvas>
+    <p>
+      <i>Uploaded images are not saved</i>
+    </p>
   </div>
 </template>
 
@@ -16,8 +25,6 @@ export default {
     return {
       imageWidth: 0,
       imageHeight: 0,
-      resizeFactor: 0,
-      asciiString: "",
       asciiObj: [{ row: " " }]
     };
   },
@@ -26,6 +33,7 @@ export default {
   },
   methods: {
     loadImageData(e) {
+      this.reInitialize();
       let imageFile = e.target.files;
       if (!imageFile.length) return;
       this.readImageData(imageFile[0]);
@@ -64,7 +72,8 @@ export default {
     },
 
     createCanvas() {
-      let canvas = document.createElement("canvas");
+      //let canvas = document.createElement("canvas");
+      let canvas = document.getElementById("image-canvas");
       return canvas;
     },
 
@@ -77,7 +86,6 @@ export default {
 
       let scalingFactor = maximumWidth / this.imageWidth;
 
-      //correct resizefactor so that width and height is no float number
       this.imageWidth = Math.round(this.imageWidth * scalingFactor);
       this.imageHeight = Math.round(this.imageHeight * scalingFactor);
 
@@ -178,6 +186,12 @@ export default {
           rowStrings = "";
         }
       }
+    },
+
+    reInitialize() {
+      this.imageWidth = 0;
+      this.imageHeight = 0;
+      this.asciiObj = [{ row: " " }];
     }
   }
 };
@@ -185,35 +199,66 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-/*h3 {
-  margin: 40px 0 0;
+#ascii-logo {
+  margin-top: 30px;
+  margin-bottom: 50px;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
+
+.input-container {
+  margin-bottom: 50px;
 }
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
-*/
+
 input {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+
+label {
+  font-size: 1em;
+  color: white;
+  width: 90px;
+  height: 20px;
+  padding: 5px;
+  background: #232b53;
+  border-radius: 3px;
+  cursor: pointer;
   margin-bottom: 30px;
 }
 
-#ascii {
-  min-width: 1200px;
-  width: 1200px;
-  resize: none;
+label:hover {
+  background-color: rgba(82, 1, 1, 0.317);
 }
 
-.overflow-visible {
-  font-family: "Press Start 2P", monospace;
-  color: black;
-  font-size: 3px;
-  font-weight: bolder;
+.hello {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#ascii-container {
+  border: 3px #232b53 solid;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.337);
+}
+@media only screen and (max-width: 450px) {
+  .overflow-visible {
+    font-family: "Press Start 2P", monospace;
+    color: black;
+    font-size: 0.5px;
+    font-weight: bolder;
+  }
+}
+
+@media only screen and (min-width: 451px) {
+  .overflow-visible {
+    font-family: "Press Start 2P", monospace;
+    color: black;
+    font-size: 2px;
+    font-weight: bolder;
+  }
 }
 </style>

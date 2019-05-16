@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
     <HelloWorld msg="AsciiArt"/>
   </div>
 </template>
@@ -19,10 +18,15 @@ export default {
 <style>
 @font-face {
   font-family: "Press Start 2P";
-  font-style: normal;
+  font-style: monospace;
   src: local("Press Start 2P"),
     url(https://fonts.googleapis.com/css?family=Press+Start+2p);
 }
+
+body {
+  background-image: url("./assets/background.jpg");
+}
+
 #app {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -31,6 +35,5 @@ export default {
   margin: auto;
   width: 50%;
   height: 50%;
-  margin-top: 60px;
 }
 </style>
