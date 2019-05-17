@@ -1,16 +1,16 @@
 <template>
   <div id="app">
-    <HelloWorld msg="AsciiArt"/>
+    <AsciiArt msg="AsciiArt"/>
   </div>
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
+import AsciiArt from "./components/AsciiArt.vue";
 
 export default {
   name: "app",
   components: {
-    HelloWorld
+    AsciiArt
   }
 };
 </script>

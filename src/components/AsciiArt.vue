@@ -20,7 +20,7 @@
 
 <script>
 export default {
-  name: "HelloWorld",
+  name: "AsciiArt",
   data() {
     return {
       imageWidth: 0,
