@@ -5,6 +5,7 @@
       <label for="input">Choose an image</label>
       <input type="file" id="input" @change="loadImageData">
     </div>
+
     <img hidden id="my-image">
     <div id="ascii-container">
       <div id="ascii" v-for="(item, index) in asciiObj" :key="index">
@@ -12,8 +13,10 @@
       </div>
     </div>
     <canvas hidden id="image-canvas"></canvas>
+    <canvas id="phone-canvas" width="320" height="700"></canvas>
+
     <p>
-      <i>Uploaded images are not saved</i>
+      <i>Uploaded images are not saved. Image orientation on phones may be flipped.</i>
     </p>
   </div>
 </template>
@@ -61,8 +64,7 @@ export default {
       let pixelBrightness = this.convertPixelToBrightness(pixelsWithoutAlpha);
       let asciiString = this.mapBrigthnessToAscii(pixelBrightness);
       this.addLineBreaks(asciiString);
-
-      //can.style.border = "blue";
+      this.convertObjIntoImg();
     },
 
     getCanvasContext() {
@@ -192,6 +194,24 @@ export default {
       this.imageWidth = 0;
       this.imageHeight = 0;
       this.asciiObj = [{ row: " " }];
+    },
+
+    convertObjIntoImg() {
+      let canvas = document.getElementById("phone-canvas");
+      let ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.font = "2px Courier";
+      let a = [];
+      let y = 10;
+
+      for (let prop in this.asciiObj) {
+        a.push(this.asciiObj[prop]);
+      }
+
+      for (let i = 1; i < a.length; i++) {
+        ctx.fillText(a[i].row, 0, y);
+        y += 5;
+      }
     }
   }
 };
@@ -244,11 +264,52 @@ label:hover {
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.337);
 }
+
+@media only screen and (max-width: 450px) {
+  #ascii-container {
+    border: 3px #232b53 solid;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.337);
+    display: none;
+  }
+}
+
+@media only screen and (max-height: 450px) {
+  #ascii-container {
+    border: 3px #232b53 solid;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.337);
+    display: none;
+  }
+}
+
+@media only screen and (min-width: 451px) {
+  #phone-canvas {
+    visibility: hidden;
+    display: none;
+  }
+}
+
+@media only screen and (min-width: 451px) and (max-height: 450px) {
+  #phone-canvas {
+    visibility: visible;
+  }
+}
+
 @media only screen and (max-width: 450px) {
   .overflow-visible {
     font-family: "Press Start 2P", monospace;
     color: black;
-    font-size: 0.5px;
+    font-size: 1px;
+    font-weight: bolder;
+  }
+}
+
+@media only screen and (max-height: 450px) {
+  .overflow-visible {
+    font-family: "Press Start 2P", monospace;
+    color: black;
+    font-size: 1px;
     font-weight: bolder;
   }
 }
