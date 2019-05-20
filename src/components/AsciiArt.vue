@@ -28,6 +28,7 @@ export default {
     return {
       imageWidth: 0,
       imageHeight: 0,
+      imageStretch: 3,
       asciiObj: [{ row: " " }]
     };
   },
@@ -74,7 +75,6 @@ export default {
     },
 
     createCanvas() {
-      //let canvas = document.createElement("canvas");
       let canvas = document.getElementById("image-canvas");
       return canvas;
     },
@@ -108,7 +108,9 @@ export default {
       let imgColors = ctx.getImageData(0, 0, this.imageWidth, this.imageHeight)
         .data;
 
-      this.imageWidth = Math.floor(this.imageWidth * 3);
+      // Image Width is stretched by factor 3 because characters are usually 2-3 times
+      // higher than they are wide. Otherwhise the picture would seem distorted.
+      this.imageWidth = Math.floor(this.imageWidth * this.imageStretch);
 
       let imgColorArray = Object.values(imgColors);
       return imgColorArray;
@@ -130,6 +132,8 @@ export default {
       return pixelTuples;
     },
 
+    // Transform RGBA colors to RGB colors because we need no alpha channel
+    // in the ASCII picture
     removeAlphaChannel(pixelTuples) {
       for (let i = 0; i < pixelTuples.length; i++) {
         pixelTuples[i].splice(3, 1);
@@ -137,6 +141,10 @@ export default {
       return pixelTuples;
     },
 
+    // The parameters 0.241 (R), 0.691 (G), 0.068 (B) are taken
+    // because they represent the RGB colors (quite accurately) to human
+    // perception. More information here:
+    // (https://stackoverflow.com/questions/596216/formula-to-determine-brightness-of-rgb-color)
     convertPixelToBrightness(pixelTuples) {
       for (let i = 0; i < pixelTuples.length; i++) {
         let rgbAverage = 0;
@@ -155,7 +163,6 @@ export default {
 
     createAsciiCharacters() {
       let asciiChars =
-        //'.`^",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$';
         '$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~i!lI;:,"^`.';
       return asciiChars;
     },
@@ -170,15 +177,15 @@ export default {
         let correspondingAsciiChar = Math.round(
           pixelBrightness[i] / conversionFactor
         );
-
         pixelBrightness[i] = asciiChars[correspondingAsciiChar];
-        for (let j = 0; j < 3; j++) {
+        for (let j = 0; j < this.imageStretch; j++) {
           asciiToString += pixelBrightness[i];
         }
       }
       return asciiToString;
     },
 
+    // Every line needs the same amount of characters
     addLineBreaks(asciiString) {
       let rowStrings = "";
       for (let i = 1; i < asciiString.length + 1; i++) {
@@ -190,15 +197,21 @@ export default {
       }
     },
 
+    // Reinitialize for use on desktop
     reInitialize() {
       this.imageWidth = 0;
       this.imageHeight = 0;
       this.asciiObj = [{ row: " " }];
     },
 
+    // For use on mobile because different canvas is used. We can not display
+    // the ascii picture in string representation on mobile, because font rendering
+    // is different to desktop browsers. Using string representation leads to
+    // inconsistencies in the representation of the picture.
     convertObjIntoImg() {
       let canvas = document.getElementById("phone-canvas");
       let ctx = canvas.getContext("2d");
+      // Resets canvas if more than one picture is uploaded
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.font = "2px Courier";
       let a = [];
@@ -293,6 +306,7 @@ label:hover {
 @media only screen and (min-width: 451px) and (max-height: 450px) {
   #phone-canvas {
     visibility: visible;
+    display: unset;
   }
 }
 
